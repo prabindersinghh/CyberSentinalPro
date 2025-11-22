@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, Shield, Mail, Users, Wifi } from "lucide-react";
+import { AlertTriangle, Shield, Mail, Users, Wifi, XCircle, Archive, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,19 @@ const getSeverityColor = (severity: string) => {
 };
 
 export const AlertFeed = ({ alerts }: AlertFeedProps) => {
+  const { toast } = useToast();
+
+  const handleAction = (alertId: number, action: string, alertTitle: string) => {
+    const actionMessages = {
+      reject: { title: "Packet Rejected", description: `Blocked threat: ${alertTitle}` },
+      quarantine: { title: "Quarantined", description: `Isolated threat: ${alertTitle}` },
+      approve: { title: "Approved", description: `Whitelisted: ${alertTitle}` },
+    };
+
+    const message = actionMessages[action as keyof typeof actionMessages];
+    toast(message);
+  };
+
   return (
     <Card className="h-[calc(100vh-300px)] border-destructive/20 danger-glow">
       <CardHeader>
@@ -92,6 +106,37 @@ export const AlertFeed = ({ alerts }: AlertFeedProps) => {
                       <p className="text-sm text-muted-foreground mb-3">
                         {alert.description}
                       </p>
+                      
+                      <div className="flex gap-2 mb-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction(alert.id, "reject", alert.title)}
+                          className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
+                        >
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Reject
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction(alert.id, "quarantine", alert.title)}
+                          className="flex-1 border-warning/30 text-warning hover:bg-warning/10"
+                        >
+                          <Archive className="h-3 w-3 mr-1" />
+                          Quarantine
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction(alert.id, "approve", alert.title)}
+                          className="flex-1 border-success/30 text-success hover:bg-success/10"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Approve
+                        </Button>
+                      </div>
+                      
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline" className="w-full">
